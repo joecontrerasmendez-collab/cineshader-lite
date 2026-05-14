@@ -15,7 +15,7 @@ jobs:
 
       - name: 📦 Clonar Newb X Legacy
         run: |
-          git clone --depth 1 https://github.com/devendrn/newb-x-legacy.git newb-src
+          git clone --depth 1 https://github.com/devendrn/newb-x-mcbe.git newb-src
           echo "✓ Newb X Legacy clonado"
           ls newb-src/
 
