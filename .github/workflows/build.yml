@@ -1,0 +1,67 @@
+name: 🎮 Build CineShader Lite
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout este repo
+        uses: actions/checkout@v4
+
+      - name: 📦 Clonar Newb X Legacy
+        run: |
+          git clone --depth 1 https://github.com/devendrn/newb-x-legacy.git newb-src
+          echo "✓ Newb X Legacy clonado"
+          ls newb-src/
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📚 Instalar dependencias
+        run: |
+          cd newb-src
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install Pillow
+          fi
+
+      - name: 🎨 Aplicar config CineShader
+        run: python apply_config.py
+
+      - name: 🔨 Compilar shader
+        run: |
+          cd newb-src
+          python build.py android 2>&1 || python build.py 2>&1
+          echo "--- Archivos generados ---"
+          find . -name "*.mcpack" 2>/dev/null
+          find . -name "*.zip" 2>/dev/null
+
+      - name: 📋 Recopilar output
+        run: |
+          PACK=$(find newb-src -name "*.mcpack" | head -1)
+          if [ -z "$PACK" ]; then
+            PACK=$(find newb-src -name "*.zip" | head -1)
+          fi
+          if [ -n "$PACK" ]; then
+            cp "$PACK" CineShader_Lite.mcpack
+            echo "✓ Pack encontrado: $PACK"
+          else
+            echo "❌ No se encontró .mcpack"
+            find newb-src -type f | head -30
+            exit 1
+          fi
+
+      - name: 🚀 Subir como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: CineShader_Lite
+          path: CineShader_Lite.mcpack
+          retention-days: 30
